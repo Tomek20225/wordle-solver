@@ -13,52 +13,52 @@ from libs.WordleSolver import WordleSolver
 solver = WordleSolver(dictionary="default.txt", reset_dictionary=True)
 print(f"Best first word: {solver.get_best_first_word()}")
 
-word1 = WordleWord([
+word_1 = WordleWord([
     WordleLetter("b", 1),
     WordleLetter("u", 0),
     WordleLetter("t", -1),
     WordleLetter("t", -1),
     WordleLetter("s", 1)
 ])
-solver.add_guess(word1)
+solver.add_guess(word_1)
 print(f"Guess for second word: {solver.get_best_guess()[0]}")
 
-# word2 = WordleWord([
+# word_2 = WordleWord([
 #     WordleLetter("m", -1),
 #     WordleLetter("o", -1),
 #     WordleLetter("o", -1),
 #     WordleLetter("n", -1),
 #     WordleLetter("a", 1)
 # ])
-# solver.addGuess(word2)
+# solver.add_guess(word_2)
 # print(f"Guess for third word: {solver.get_best_guess()[0]}")
 
-# word3 = WordleWord([
+# word_3 = WordleWord([
 #     WordleLetter("s", 1),
 #     WordleLetter("a", 0),
 #     WordleLetter("a", 1),
 #     WordleLetter("b", -1),
 #     WordleLetter("a", 1)
 # ])
-# solver.addGuess(word3)
+# solver.add_guess(word_3)
 # print(f"Guess for foruth word: {solver.get_best_guess()[0]}")
 
-# word4 = WordleWord([
+# word_4 = WordleWord([
 #     WordleLetter("s", 1),
 #     WordleLetter("p", -1),
 #     WordleLetter("a", 1),
 #     WordleLetter("s", 0),
 #     WordleLetter("a", 1)
 # ])
-# solver.addGuess(word4)
+# solver.add_guess(word_4)
 # print(f"Guess for fifth word: {solver.get_best_guess()[0]}")
 
-# word5 = WordleWord([
+# word_5 = WordleWord([
 #     WordleLetter("s", 1),
 #     WordleLetter("s", 0),
 #     WordleLetter("a", 1),
 #     WordleLetter("w", -1),
 #     WordleLetter("a", 1)
 # ])
-# solver.addGuess(word5)
+# solver.add_guess(word_5)
 # print(f"Guess for sixth, final word: {solver.get_best_guess()[0]}")
