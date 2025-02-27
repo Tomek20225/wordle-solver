@@ -1,7 +1,7 @@
 class WordleLetter:
-    # TODO: Zabezpieczajki, private, gettery, settery
+    # TODO: Tighten the class
     
-    def __init__(self, letter, match):
+    def __init__(self, letter: str, match: int):
         self.letter = letter
         self.match = match
 

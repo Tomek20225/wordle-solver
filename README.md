@@ -27,7 +27,7 @@ The script doesn't autoplay Wordle *at the moment* and it doesn't have a CLI. Yo
    1. The `WordleSolver` accepts two parameters: the dictionary file name and a boolean implying whether you want to process the dictionary again or use the previously generated files. **In the first run you have to generate the files.**
    2. When you run the script for the first time, it'll print the first suggested word to put in the game. You may use that suggestion or put in the word you prefer - *the choice is yours*.
    3. Once you have an answer from Wordle or it's equivalent, you create a `WordleWord` variable, which requires an array of 5 `WordleLetter` objects. Each `WordleLetter` object requires a character and it's score (`1` for the correct placement of the letter, `0` for the correct letter but wrong placement and `-1` for wrong letter). **The order of `WordleLetter` objects in an array meant for `WordleWord` is important.**
-   4. Then you add it to the Solver by using `addGuess` method. At last, you print out the quess with `getBestGuess` method.
+   4. Then you add it to the Solver by using `add_guess` method. At last, you print out the quess with `get_best_guess` method.
    5. Repeat steps 2.3 and 2.4 until you win!
 
 And please remember to ***read comments in the script***.

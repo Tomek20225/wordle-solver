@@ -1,125 +1,129 @@
 import os.path
 import re
+from typing import List, Tuple
+import os
+
 
 # TODO: Try/Except when opening files
+# TODO: Util for file reading and caching
 # TODO: Add saving a hash of the read dictionary for auto detection of changed dictionary vs. processed data in /temp
 
 class FileHandler():
-    def __init__(self, dictionary = None, reset = False):
+    def __init__(self, dictionary = None, reset_dictionary = False):
         if dictionary is None:
             self.dict = "default.txt"
         else:
             self.dict = dictionary
 
-        self.dictPath = "dictionaries/"
-        self.tempPath = "temp/"
+        self.dict_path = "dictionaries/"
+        self.temp_path = "temp/"
         
-        self.pWords = "words-processed.txt"
-        self.pExWords = "words-excluded.txt"
-        self.pRanking = "words-processed-ranking.txt"
-        self.pResults = "words-results.txt"
+        self.processed_words_filename = "words-processed.txt"
+        self.excluded_words_filename = "words-excluded.txt"
+        self.ranking_filename = "words-processed-ranking.txt"
+        self.results_filename = "words-results.txt"
 
-        self.bestFirstWord = ""
+        self.best_first_word = ""
 
-        if reset:
-            self.parseDictionary()
+        if not os.path.exists(self.temp_path):
+            os.makedirs(self.temp_path)
+
+        if reset_dictionary:
+            self._parse_dictionary()
         else:
-            self.findBestFirstWord()
+            self._find_best_first_word()
 
-    def isCreated(self, path, filename):
+    def _is_created(self, path: str, filename: str) -> bool:
         return os.path.isfile(path + filename)
 
-    def getExcludedWords(self):
-        excludedWords = []
+    def _get_excluded_words(self) -> List[str]:
+        excluded_words: List[str] = []
         
-        if not self.isCreated(self.dictPath, self.pExWords):
-            return excludedWords
+        if not self._is_created(self.dict_path, self.excluded_words_filename):
+            return excluded_words
 
-        list = open(self.dictPath + self.pExWords, "r", encoding="utf-8")
+        list = open(self.dict_path + self.excluded_words_filename, "r", encoding="utf-8")
 
         for line in list:
             line = line.strip()
             if line:
-                excludedWords.append(line)
+                excluded_words.append(line)
 
-        return excludedWords
+        return excluded_words
     
-    def parseDictionary(self):
-        list = open(self.dictPath + self.dict, "r", encoding="utf-8")
-        excludedWords = self.getExcludedWords()
+    def _parse_dictionary(self) -> None:
+        list = open(self.dict_path + self.dict, "r", encoding="utf-8")
+        excluded_words = self._get_excluded_words()
 
         found = []
-        foundLetters = []
-        foundLettersCount = []
+        found_letters = []
+        found_letters_count = []
         for line in list:
-            isInvalid = re.search("^\s*$", line)
-            if isInvalid is not None:
+            if re.search(r"^\s*$", line):
                 continue
 
             line = line.split()[0].strip().lower()
 
-            isValid = re.search("^[^\s\d!-\/:-@[-`{-~]{5}$", line)
-            # isValid = re.search("^[a-z]{5}$", line)
-            if isValid is not None:
-                if line not in found and line not in excludedWords:
+            if re.fullmatch(r"^[^\s\d\W]{5}$", line):
+                if line not in found and line not in excluded_words:
                     found.append(line)
                 else:
                     continue
 
                 for letter in line:
-                    if letter not in foundLetters:
-                        foundLetters.append(letter)
-                        foundLettersCount.append(1)
+                    if letter not in found_letters:
+                        found_letters.append(letter)
+                        found_letters_count.append(1)
                     else:
-                        foundLettersCount[foundLetters.index(letter)] += 1
+                        found_letters_count[found_letters.index(letter)] += 1
 
         # TODO: Find a better way to rank words
         # For now the words are ranked by frequency of their individual letters in the parsed dictionary
         # In most cases that's good enough to solve a Wordle game in 4-5 tries, but the intention for the Solver is for it to be as efficient and effective as possible
         # Been thinking about popularity of the words in Google Search, but that will most likely be even less reliable
-        letterRanking = []
+        letter_ranking = []
         i = 0
-        for letter in foundLetters:
-            letterRanking.append((letter, foundLettersCount[i]))
+        for letter in found_letters:
+            letter_ranking.append((letter, found_letters_count[i]))
             i += 1
-        letterRanking.sort(key=lambda tup: tup[1], reverse=True)
+        letter_ranking.sort(key=lambda tup: tup[1], reverse=True)
 
-        letterRankingFinal = []
-        i = len(letterRanking)
-        for letterTup in letterRanking:
-            letterRankingFinal.append(letterTup[0] + "-" + str(i))
+        letter_ranking_final = []
+        i = len(letter_ranking)
+        for letter_tup in letter_ranking:
+            letter_ranking_final.append(letter_tup[0] + "-" + str(i))
             i -= 1
 
         list.close()
 
-        print(len(found))
-        self.writeToFile(found, self.pWords)
-        self.writeToFile(letterRankingFinal, self.pRanking)
+        print(f"Found {len(found)} possible words")
+        self._write_to_file(found, self.processed_words_filename)
+        self._write_to_file(letter_ranking_final, self.ranking_filename)
 
-        self.findBestFirstWord()
+        self._find_best_first_word()
 
-    def getLetterRanking(self):
-        if not self.isCreated(self.tempPath, self.pRanking):
-            self.parseDictionary()
+    def get_letter_ranking(self) -> List[Tuple[str, int]]:
+        if not self._is_created(self.temp_path, self.ranking_filename):
+            self._parse_dictionary()
 
-        list = open(self.tempPath + self.pRanking, "r", encoding="utf-8")
-        letterRanking = []
+        list = open(self.temp_path + self.ranking_filename, "r", encoding="utf-8")
+        letter_ranking: List[Tuple[str, int]] = []
 
         for line in list:
             line = line.strip()
             if line:
                 line = line.split("-")
-                letterRanking.append((line[0], int(line[1])))
+                letter_ranking.append((line[0], int(line[1])))
 
         list.close()
-        return letterRanking
+        return letter_ranking
 
-    def getProcessedWords(self):
-        if not self.isCreated(self.tempPath, self.pWords):
-            self.parseDictionary()
+    def get_processed_words(self) -> List[str]:
+        if not self._is_created(self.temp_path, self.processed_words_filename):
+            self._parse_dictionary()
 
-        list = open(self.tempPath + self.pWords, "r", encoding="utf-8")
-        words = []
+        list = open(self.temp_path + self.processed_words_filename, "r", encoding="utf-8")
+        words: List[str] = []
 
         for line in list:
             line = line.strip()
@@ -129,43 +133,43 @@ class FileHandler():
         list.close()
         return words
     
-    def findBestFirstWord(self):
-        list = self.getProcessedWords()
-        ranking = self.getLetterRanking()
+    def _find_best_first_word(self) -> None:
+        list = self.get_processed_words()
+        ranking = self.get_letter_ranking()
 
         max = 5
-        while self.bestFirstWord == "":
-            bestLetters = []
+        while self.best_first_word == "":
+            best_letters = []
             for i in range(max):
-                bestLetters.append(ranking[i][0])
+                best_letters.append(ranking[i][0])
             
             for line in list:
-                isMatch = True
+                is_match = True
                 for letter in line:
-                    if letter not in bestLetters:
-                        isMatch = False
-                if isMatch == True:
+                    if letter not in best_letters:
+                        is_match = False
+                if is_match == True:
                     if len(set(line)) == len(line):
-                        self.bestFirstWord = line
+                        self.best_first_word = line
                         break
             
             max += 1
     
-    def writeToFile(self, tab, file):
-        newList = open(self.tempPath + file, "w", encoding="utf-8")
+    def _write_to_file(self, tab: List[str], filename: str) -> None:
+        new_list = open(self.temp_path + filename, "w", encoding="utf-8")
 
         for word in tab:
             if word != tab[len(tab) - 1]:
-                newList.write(word + "\n")
+                new_list.write(word + "\n")
             else:
-                newList.write(word)
+                new_list.write(word)
 
-        newList.close()
+        new_list.close()
 
-    def saveResults(self, results):
-        parsedResults = []
+    def save_results(self, results: List[Tuple[str, int]]) -> None:
+        parsed_results = []
 
         for result in results:
-            parsedResults.append(result[0])
+            parsed_results.append(result[0])
 
-        self.writeToFile(parsedResults, self.pResults)
+        self._write_to_file(parsed_results, self.results_filename)

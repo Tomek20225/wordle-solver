@@ -1,18 +1,22 @@
-class WordleWord:
-    # TODO: Zabezpieczajki, private, gettery, settery
+from typing import List
+from .WordleLetter import WordleLetter
 
-    def __init__(self, letters):
+
+class WordleWord:
+    # TODO: Tighten the class
+
+    def __init__(self, letters: List[WordleLetter]):
         self.letters = letters
 
     def __str__(self):
         str = ""
-        for wLetter in self.letters:
-            str += wLetter.letter
+        for w_letter in self.letters:
+            str += w_letter.letter
         return str
 
-    def getLettersWithStatus(self, statusNum):
-        letters = []
-        for wLetter in self.letters:
-            if wLetter.match == statusNum:
-                letters.append(wLetter.letter)
+    def get_letters_with_status(self, status_num: int) -> List[str]:
+        letters: List[str] = []
+        for w_letter in self.letters:
+            if w_letter.match == status_num:
+                letters.append(w_letter.letter)
         return letters
